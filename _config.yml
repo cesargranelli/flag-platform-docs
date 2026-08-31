@@ -26,5 +26,3 @@ defaults:
 exclude:
   - README.md
   - .github
-  - "*.drawio"
-  - "*.drawio.svg"

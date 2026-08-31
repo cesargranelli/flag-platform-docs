@@ -1,3 +1,8 @@
+---
+layout: page
+title: Fluxo de Telas — Flag Referee App
+---
+
 # Fluxo de Telas — Flag Referee App
 
 > Documento de navegação do app da mesa (Referee App). Reflete o estado atual do código em `develop`.

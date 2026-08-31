@@ -19,7 +19,7 @@ layout: home
 
 | Documento | Conteúdo |
 |-----------|----------|
-| [Fluxo de telas — Referee App](apps/referee-app/fluxo-de-telas.md) | Navegação completa do app da mesa: rotas, autenticação, operação de partida e check-in |
+| [Fluxo de telas — Referee App](apps/referee-app/fluxo-de-telas.html) | Navegação completa do app da mesa: rotas, autenticação, operação de partida e check-in |
 
 ## Produto
 
