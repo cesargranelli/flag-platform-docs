@@ -1,3 +1,7 @@
+---
+layout: home
+---
+
 # Documentação — Flag Platform
 
 Índice da documentação técnica e de produto do monorepo.
@@ -39,9 +43,15 @@
 | Documento | Conteúdo |
 |-----------|----------|
 | [Design tokens](design/tokens.md) | Fonte da verdade visual: cores Shifty, tipografia DM Sans, formas, componentes |
-| [UX Admin Web — login](design/ux/admin-web-login.md) | Specs de UX das telas de autenticação |
-| [Referências de UX](design/ux/referencias.md) | Referências de design |
-| [Referências Figma](design/ux/figma-ref/) | Imagens de referência |
+| [Layout spec](design/layout-spec.md) | Especificação de layout das telas |
+| [Referência Kickster](design/kickster-reference.md) | Referência de design Kickster |
+| [UX — referências](design/ux/) | Specs de UX e referências de design |
+
+## Pesquisa
+
+| Documento | Conteúdo |
+|-----------|----------|
+| [Mapeamento FlagStats](research/flagstats-mapeamento.md) | Levantamento do universo FlagStats |
 
 ## Como ler esta documentação
 

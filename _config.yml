@@ -1,0 +1,30 @@
+# Configuração do site Jekyll — Flag Platform Docs
+title: Flag Platform Docs
+description: >-
+  Documentação técnica e de produto do Flag Platform: arquitetura, fluxos,
+  decisões (ADRs), design e apps.
+baseurl: "/flag-platform-docs"
+url: "https://cesargranelli.github.io"
+
+# Tema
+theme: minima
+
+# Markdown
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+
+# Front matter default: página sem layout específico usa o padrão do tema.
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: page
+
+# Arquivos que não devem ser copiados para o site
+exclude:
+  - README.md
+  - .github
+  - "*.drawio"
+  - "*.drawio.svg"
