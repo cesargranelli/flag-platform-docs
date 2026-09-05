@@ -73,6 +73,59 @@ USER (N)            → Atleta/coach/referee com roles específicos
 - Referee rotation
 - Roster eligibility
 
+### 6. Estratégia de Dados: PostgreSQL Primário + Firestore CQRS Light
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    ARQUITETURA DE DADOS                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────┐    WRITE PATH    ┌──────────────────┐     │
+│  │   Clients   │ ───────────────► │   PostgreSQL     │     │
+│  │  (Apps)     │                  │  (Source of Truth)│     │
+│  └─────────────┘                  └────────┬─────────┘     │
+│                                             │               │
+│                              ASYNC SYNC     │               │
+│                                             ▼               │
+│  ┌─────────────┐    READ PATH     ┌──────────────────┐     │
+│  │   Clients   │ ◄──────────────► │    Firestore     │     │
+│  │  (Dashboards│                  │  (CQRS Mirror)   │     │
+│  │  Leaderboards)                └──────────────────┘     │
+│  └─────────────┘                                            │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Princípios:**
+
+| Camada | Responsabilidade | Tecnologia |
+|--------|------------------|------------|
+| **Command/Write** | Transações, integridade, validações | PostgreSQL (ACID) |
+| **Query/Read** | Dashboards, leaderboards, real-time scores | Firestore (escalável) |
+| **Sync** | Event-driven via Cloud Functions | PostgreSQL → Firestore |
+
+**Entidades Espelhadas (Read Model):**
+
+| Entidade | Tabela PostgreSQL | Firestore Collection | Use Case |
+|----------|-------------------|----------------------|----------|
+| Organization | `organizations` | `organizations` | Dropdowns, listings |
+| Competition | `competitions` | `competitions` | Calendar, standings |
+| Category | `categories` | `categories` | Division views |
+| Team | `teams` | `teams` | Team profiles, rosters |
+| Round | `rounds` | `rounds` | Schedule views |
+| Game | `games` | `games` | Live scores, details |
+| ScoreEvent | `score_events` | `score_events` | Play-by-play |
+| Standing | `standings` | `standings` | Leaderboards |
+| Athlete | `athletes` | `athletes` | Profiles, stats |
+| RosterEntry | `team_roster` | `roster_entries` | Eligibility checks |
+| CheckIn | `checkins` | `checkins` | Real-time validation |
+
+**Benefícios:**
+- ✅ **Escrita consistente** – PostgreSQL garante ACID para scores, check-ins, limits
+- ✅ **Leitura performática** – Firestore escalável para dashboards, analytics
+- ✅ **Custo controlado** – Ambos gratuitos/low-cost no tier inicial
+- ✅ **Zero refatoração de schema** – Dados de domínio continuam em PostgreSQL
+
 ---
 
 ## Consequências
@@ -83,12 +136,14 @@ USER (N)            → Atleta/coach/referee com roles específicos
 - ✅ **Auth simplificado**: Firebase Auth com custom claims
 - ✅ **Apps integrados**: Todos compartilham o mesmo backend
 - ✅ **Escalável**: Pode adicionar novos roles sem refatoração
+- ✅ **Leitura otimizada**: Firestore para dashboards e real-time
 
 ### Negativas
 - ⚠️ **Migração necessária**: Reverter builds anteriores do Firestore
 - ⚠️ **Risco de quebra**: Mudança de autenticação pode afetar testes existentes
 - ⚠️ **Complexidade inicial**: Implementar Firebase Auth + Custom Claims
 - ⚠️ **Tempo**: Requer revisão de issues existentes
+- ⚠️ **Dual-write**: Sincronização eventual entre PostgreSQL ↔ Firestore
 
 ---
 
@@ -119,6 +174,7 @@ USER (N)            → Atleta/coach/referee com roles específicos
 - 4 roles: SUPER_ADMIN, ORG_ADMIN, MANAGER, USER
 - Firebase Auth com Custom Claims
 - Manter PostgreSQL para dados de domínio (não migrar para Firestore)
+- **Firestore como espelho CQRS Light para leitura**
 - Apps especializados integrados
 
 ---
@@ -149,6 +205,13 @@ USER (N)            → Atleta/coach/referee com roles específicos
 3. Player profiles avançados
 4. Live streaming (parceria)
 
+### Fase 5: CQRS Light - Firestore Mirror (2-3 sprints)
+1. Configurar Cloud Functions para sincronização
+2. Implementar soft deletes em PostgreSQL
+3. Migrar dados iniciais (seed) para Firestore
+4. Criar endpoints de leitura em Firestore
+5. Validar performance e indexação
+
 ---
 
 ## Critérios de Aceitação
@@ -161,6 +224,8 @@ USER (N)            → Atleta/coach/referee com roles específicos
 - [ ] Walkover tracking
 - [ ] Referee rotation
 - [ ] Per-play scoring
+- [ ] **PostgreSQL → Firestore sync ativo**
+- [ ] **Dashboards/leaderboards lendo de Firestore**
 - [ ] Testes de aceitação passando
 
 ---
@@ -173,6 +238,7 @@ USER (N)            → Atleta/coach/referee com roles específicos
 | Complexidade de migração | Fases graduais, testes em cada sprint |
 | Resistência da equipe | Comunicação clara dos benefícios |
 | Lock-in Firebase | Usar apenas Auth, manter dados em PostgreSQL |
+| **Eventual consistency** | **Aceitável para leitura (dashboards), crítico para escrita (PostgreSQL)** |
 
 ---
 
