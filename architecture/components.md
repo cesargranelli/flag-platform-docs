@@ -1,4 +1,4 @@
-# Flag Platform — Mapa de Componentes
+## Flag Platform — Componentes
 
 Catálogo detalhado dos componentes da solução, por camada. Tudo aqui reflete o código-fonte atual (branch `main`).
 
@@ -6,13 +6,24 @@ Catálogo detalhado dos componentes da solução, por camada. Tudo aqui reflete 
 
 ```
 flag-platform/
-├── backend/            → API Spring Boot (Modular Monolith)
-├── frontend/           → Workspace Flutter (3 apps + 3 packages)
-├── infrastructure/     → Docker Compose (PostgreSQL + pgAdmin)
-├── docs/               → Visão, backlog, ADRs, design, arquitetura
-├── .github/workflows/  → CI + Release (deploy com gate)
-└── .ai/                → Contexto para agentes de IA
+├── flag_backend/         → API Spring Boot (Modular Monolith) - Core backend
+├── flag_admin_web/       → Interface web para gestão administrativa
+├── flag_referee_app/     → App Flutter para árbitros/mesa (operação de jogos)
+├── flag_public_app/       → App Flutter público (torcedores, atletas)
+├── flag_tester_e2e/       → Suite de testes end-to-end (Playwright)
+├── flag_platform_docs/    → Documentação, ADRs, design, arquitetura
+└── infrastructure/        → Docker Compose (PostgreSQL + pgAdmin)
 ```
+
+## Aplicações da Plataforma
+
+| App | Tecnologia | Responsabilidade | Público-alvo | Auth |
+|-----|------------|-----------------|--------------|------|
+| **Flag Backend** | Spring Boot 4.1 / Java 25 | API REST, regras de negócio, persistência | Todos os apps | JWT (migrando para Firebase) |
+| **Flag Admin Web** | Flutter Web | Gestão administrativa, cadastros, usuários | Staff, organizadores | JWT / Firebase |
+| **Flag Referee App** | Flutter | Operação de jogos, check-in, lances ao vivo | Árbitros, mesa | JWT / Firebase |
+| **Flag Public App** | Flutter | Torcedores, atletas, acompanhamento ao vivo | Todos | Firebase Auth (opcional) |
+| **Flag Tester e2e** | Playwright | Testes end-to-end em staging/produção | QA, Dev | - |
 
 ## Backend (Spring Boot 4.1 / Java 25 / Maven)
 
@@ -118,7 +129,6 @@ Regra de arquitetura: **dependências apenas via interfaces `{Lookup}`** (sem ac
 | `flag_admin_web` | login, signup, forgot/reset password, home (grid de cards), 9 listas + formulários, aprovações, usuários | GoRouter com `context.go` (rotas explícitas) e `context.push` (pilha) | JWT + `AuthController` |
 | `flag_referee_app` | login, home, game operation (placar ao vivo), check-in/validação | GoRouter protegido | JWT + `AuthController` |
 | `flag_public_app` | home (campeonatos), detalhe da competição, jogos, resultados, classificação, detalhe do jogo | GoRouter público | Sem login |
-
 ### Padrões de UI (tema Shifty)
 
 - **Paleta**: primary `#FD6B22`, secondary `#F15223`, success `#4FBF67`, danger `#F04C4C`, background `#FAFAFA`, texto `#1B1D21`/`#737373`.
