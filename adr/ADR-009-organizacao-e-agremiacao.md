@@ -17,11 +17,41 @@ O domínio hoje chamado "organização" agregava federações, associações, li
 
 > Nomenclatura: **Institution** (entidade) para evitar colisão `Club` (entidade) vs `Club` (tipo). Tabela sugerida `institutions`. Validar com ADR-003/007 antes de migrar.
 
-### 2. Afiliação
+### 2. Afiliação — vínculo fraco, opcional e N:N
 
-- `Institution` pertence a uma `Organization` (`institutions.organization_id` FK).
-- **Afiliação é mutável**: instituição pode mudar de organização.
-- Transferência deve ser auditada (ex: `institution_id`, `from_organization_id`, `to_organization_id`, `changed_at`, `changed_by`).
+- **Opcional:** `Institution` pode existir sem vínculo (`organization_id` nulo ou sem linhas em junção).
+- **Fraco e mutável:** pode mudar de organização e pode estar vinculada a **mais de uma** ao mesmo tempo.
+- **Modelagem proposta (N:N fraco):** tabela de junção `institution_organizations` em vez de FK único em `institutions`:
+
+```sql
+CREATE TABLE platform.institutions (
+  id uuid PRIMARY KEY,
+  name text NOT NULL,
+  type text NOT NULL CHECK (type IN ('CLUB','UNIVERSITY')),
+  status text NOT NULL,
+  colors text[], -- paleta (ver §5.2)
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE platform.institution_organizations (
+  institution_id uuid NOT NULL REFERENCES platform.institutions(id) ON DELETE CASCADE,
+  organization_id uuid NOT NULL REFERENCES platform.organizations(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  PRIMARY KEY (institution_id, organization_id)
+);
+-- Índice inverso para busca por organização
+CREATE INDEX idx_institution_orgs_org ON platform.institution_organizations(organization_id);
+```
+
+- **Alternativa descartada:** `institutions.organization_id` FK único — limita a 1:1 e não reflete "pode se associar a mais de uma".
+- **Auditoria de transferência:** se necessário histórico, adicionar `institution_organization_history (id, institution_id, from_organization_id, to_organization_id, changed_at, changed_by)` ou usar tabela de auditoria genérica; MVP pode ser só `created_at/created_by` na junção + log de app.
+
+**Exemplos:**
+- Clube sem vínculo: linhas só em `institutions`, nenhuma em `institution_organizations`.
+- Clube em 2 ligas: duas linhas em `institution_organizations` com `organization_id` distintos.
+- Troca de liga: `DELETE` + `INSERT` na junção (ou `INSERT`/`DELETE` parcial para múltiplas).
 
 ### 3. Perfis e permissões (criação)
 
@@ -38,9 +68,9 @@ O domínio hoje chamado "organização" agregava federações, associações, li
 
 - `OrganizationType = FEDERATION | ASSOCIATION | LEAGUE`.
 - `InstitutionType = CLUB | UNIVERSITY` (enum da entidade `Institution`).
-- Migration para `institutions` (`id`, `name`, `type`, `organization_id` FK, `status`, timestamps); **não** reaproveitar `organizations`.
+- Migration para `institutions` + `institution_organizations` (N:N fraco, opcional); **não** reaproveitar `organizations`.
 - `SecurityExpressions`: `ORGANIZATION_WRITE = "hasAuthority('STATUS_ACTIVE') and hasAnyRole('ORGANIZER','ADMIN','ADMIN_LIGA')"` e `INSTITUTION_WRITE = "hasAuthority('STATUS_ACTIVE') and hasAnyRole('ORGANIZER','MANAGER','ADMIN','ADMIN_LIGA')"`.
-- Frontend: separar navegação/cards "Organizações" vs "Instituições" (label PT: Agremiações).
+- Frontend: separar navegação/cards "Organizações" vs "Instituições" (label PT: Agremiações); **Home order:** `Organizações` → `Agremiações` → demais cards; novo card "Agremiações" aponta para módulo `institutions`.
 
 ### 5. Melhorias de UX (backlog anotado, sem implementação)
 
@@ -64,6 +94,11 @@ O domínio hoje chamado "organização" agregava federações, associações, li
 ## Consequências
 - Clareza de domínio e de permissões.
 - Migração de dados necessária se houver clubes/universidades já em `organizations`.
+
+### 6. Home — novo card Agremiações
+
+- Novo `KicksterCard` "Agremiações" no `flag_admin_web` Home, refletindo o módulo `institutions`.
+- **Ordem dos cards:** `Organizações` (1º) → `Agremiações` (2º) → demais cards (Competições, Times, etc.).
 
 ## Não-escopo deste ADR
 Implementação, migrations, APIs e telas — aguardar demais pontos do PO.
