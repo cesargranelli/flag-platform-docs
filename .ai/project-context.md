@@ -4,9 +4,9 @@
 - Reinstitute Flag Platform from "moment zero" with a new architecture and data model.
 - Preserving `main_v1` existant branches in repositories: `flag_admin_web`, `flag_backend`.
 - A phases approach starting with `flag_admin_web`.
-- Use combination of Flyway for DB migration management and JOOQ for type-safe persistence.
+- Use combination of Flyway for DB migration management and JOOQ for type-safe persistence. From baseline `V1__MomentZero.sql` onwards, subsequent migrations will be written in Java using JOOQ DSL (ADR-007).
 - Zero data in all tables before starting.
-- Implement data migration logic for `organizations` -> `clubs` entity hierarchy change (ADR-003).
+- Implement data migration logic for `organizations` -> `clubs` entity hierarchy change (ADR-003) via Java-based Flyway migration.
 
 ## Branching Strategy
 - Preserve existing `main` branches.

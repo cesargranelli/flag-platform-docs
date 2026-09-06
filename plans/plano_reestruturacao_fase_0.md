@@ -9,8 +9,8 @@ Esta fase inicial foca em estabelecer a base técnica e estrutural para o projet
 - **Reinstituição Total:** Reiniciar a Flag Platform a partir de um "momento zero", implementando uma nova arquitetura e modelo de dados.
 - **Preservação de Histórico:** Manter as branches `main_v1` existentes nos repositórios `flag_admin_web` e `flag_backend` para fins de histórico e fallback.
 - **Abordagem em Fases:** O desenvolvimento das aplicações ocorrerá sequencialmente, começando pelo `flag_admin_web`.
-- **Tecnologias de Persistência:** Utilizar Flyway para o gerenciamento de migrações de banco de dados e JOOQ para persistência type-safe.
-- **Migração de Dados:** Implementar a migração de dados da hierarquia antiga (`organizations`) para a nova (`clubs`), conforme a ADR-003. Para o "momento zero", todas as tabelas relevantes serão zeradas.
+- **Tecnologias de Persistência e Migrações:** Utilizar Flyway para o gerenciamento de migrações de banco de dados e JOOQ para persistência type-safe. A partir do baseline `V1__MomentZero.sql`, todas as migrações subsequentes serão implementadas em Java utilizando a DSL do JOOQ (`BaseJavaMigration`), conforme estabelecido na **ADR-007**.
+- **Migração de Dados:** Implementar a migração de dados da hierarquia antiga (`organizations`) para a nova (`clubs`), conforme a ADR-003, via migração Java com JOOQ. Para o "momento zero", todas as tabelas relevantes serão zeradas.
 
 ## Passos da Fase 0
 
