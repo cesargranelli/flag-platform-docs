@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposto — 2026-09-06
+Aceito — Consolidado com base na Especificação Técnica (Seção 3 - Autenticação e Segurança Híbrida)
 
 ## Contexto
 
