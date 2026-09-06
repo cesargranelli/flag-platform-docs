@@ -187,6 +187,89 @@ USER (N)            → Atleta/coach/referee com roles específicos
 3. Mapear permissões por role
 4. Criar service de role management
 
+### Fase 2: Arquitetura Flutter (view/model/repository/service) (2 sprints)
+**Contexto**: Aplicação `flag_admin_web` será reescrita seguindo o padrão recomendado pelo Flutter para apps maintaináveis e testáveis.
+
+**Premissas adotadas (baseadas em https://docs.flutter.dev/app-architecture/guide e case-study):**
+
+1. **Separação de responsabilidades** — A aplicação será dividida em quatro camadas distintas:
+   - **Views**: Widgets que apenas apresentam dados. Nenhuma lógica de negócio. Apenas lógica de layout, animação e condicionais simples baseadas no state do ViewModel.
+   - **ViewModels**: Contém a lógica que converte dados brutos em `UI State`. Responsável por recuperar dados de Repositories, transformá-los e expor `commands` (ex: `loadOrganizations`, `deleteOrganization`, `toggleOrganizationSelection`) para os Views reagirem a eventos do usuário.
+   - **Repositories**: Fonte de verdade para dados do modelo. Polling de serviços, transformação em domain models, handling de caching, error handling, retry logic. Uma repository por tipo de dados (ex: `OrganizationRepository`).
+   - **Services**: Camada mais baixa. Envolve endpoints de API (REST) e exponencia `Future`/`Stream`. Não possui state própria. Um service por fonte de dados (ex: `OrganizationService` wrapping REST API).
+
+2. **One-to-one relationship** — Cada View tem exatamente um ViewModel correspondente. O ViewModel expõe o state necessário para o View renderizar.
+
+3. **Data flow**: View → receives UI State from ViewModel → user interaction → View calls ViewModel command → ViewModel → retrieves/transforms data from Repository → Repository → fetches from Service (REST API) → data reaches View.
+
+4. **Package structure** (padrão Compass app combinado: por tipo + por feature):
+   - `lib/ui/<feature_name>/` — por feature: `view_models/<vm>.dart`, `widgets/<screen>.dart`
+   - `lib/data/` — por tipo: `repositories/<repo>.dart`, `services/<service>.dart`, `model/<api-model>.dart`
+
+5. **Começando pelo módulo organizations**:
+   - Criar `OrganizationService` (serviço REST API)
+   - Criar `OrganizationRepository` (source of truth, caching, error handling)
+   - Criar `OrganizationViewModel` (transforma dados para UI State, expõe commands)
+   - Criar `OrganizationView` (widget que apenas consome o viewModel)
+
+6. **Injeção de dependência** — Usar `provider` ou `get_it` para conectar as camadas, seguindo o padrão do case study.
+
+7. **Testabilidade** — Cada camada pode ser testada isoladamente:
+   - Views testadas como widgets unitários
+   - ViewModels testados com mock de Repository
+   - Repositories testados com mock de Service
+   - Services testados com mock de HTTP client
+
+**Critérios de aceitação para o módulo organizations:**
+- [ ] `OrganizationViewModel` expõe `Organization[]` state e commands `load`, `delete`, `toggleSelection`
+- [ ] `OrganizationRepository` abstrai o serviço e fornece `Organization` domain model
+- [ ] `OrganizationService` faz chamadas REST API e retorna `Organization` domain model
+- [ ] `OrganizationView` apenas renderiza baseada no state do ViewModel, sem lógica de negócio
+- [ ] Testes unitários passando para ViewModel e Repository
+
+#### Estrutura de Pastas Recomendada (flutter app architecture case study)
+
+```
+lib/
+├── ui/                                          # Organizada por FEATURE
+│   ├── core/                                    # Widgets e theme globais compartilhados
+│   │   ├── ui/                                  # Shared widgets (buttons, inputs, etc.)
+│   │   └── themes/                              # ThemeData da aplicação
+│   └── <feature_name>/                         # Pasta por feature (ex: organizations/)
+│       ├── view_models/                        # ViewModel classes (1 por feature)
+│       │   └── <view_model_class>.dart
+│       └── widgets/                            # View widgets (screens + sub-widgets)
+│           ├── <feature_name>_screen.dart      # Screen principal
+│           └── other_widgets                   # Widgets auxiliares
+├── domain/                                      # Modelos de domínio (entities)
+│   └── models/                                  # Domain models (ex: Organization, Club, Team, Athlete)
+│       └── <model_name>.dart
+├── data/                                        # Organizada por TIPO (shared across features)
+│   ├── repositories/                           # Repository classes (1 por tipo de dado)
+│   │   └── <repository_class>.dart
+│   ├── services/                               # Service classes (API clients, lowest layer)
+│   │   └── <service_class>.dart
+│   └── model/                                  # API models (JSON serialization)
+│       └── <api_model_class>.dart
+├── config/                                      # Configuração (rotas, inicialização)
+├── utils/                                       # Utilitários diversos
+├── routing/                                     # Configuração de rotas
+├── main_staging.dart                           # Entry point staging
+├── main_development.dart                       # Entry point development
+└── main.dart                                   # Entry point production
+
+test/                                            # Unit and widget tests
+├── data/
+├── domain/
+├── ui/
+└── utils/
+testing/                                         # Mocks and utilities for tests
+├── fakes/
+│   └── models/
+```
+
+### Fase 3: ...
+
 ### Fase 2: Hierarquia Organizacional (3-4 sprints)
 1. Migrar `Team` para `Club → Team`
 2. Criar nova tabela `Season`
