@@ -81,7 +81,13 @@ Escala: `4, 8, 12, 16, 24, 32`. Uso típico: padding de tela `16`, espaçamento 
 | `radius.chip` | 10 |
 | `radius.status` | 30 |
 | `radius.checkbox` | 2 |
+| `radius.modal` | 24 |
 | `elevation.card` | 1 |
+| `elevation.modal` | 0 8 32 rgba(18,25,51,0.06) |
+
+## Modais (padrão Kickster — Popup 343px, issue ADR-009)
+
+Referência: [Figma — Popup "Share this Match" 34430:8519](https://www.figma.com/design/bXGRAtra3DkMAPGKLLLaCQ/Kickster---Live-Score---News-Sport-Apps-UI-Kits--Community-?node-id=34430-8519&t=4VvSQu6LIHJAB1cW-4): container **343px** (mobile) / **480px** web, padding **24**, gap **20**, fundo `surface`, raio `24`, sombra `elevation.modal`, header `Body Large Bold` + close circular 24px `surface.muted`, divider `Grayscale 20 (#ECF1F6)` 1px, conteúdo gap 16. Usar `Dialog` com `shape: RoundedRectangleBorder(borderRadius: 24)` e `insetPadding: 24`.
 
 ## Componentes (padrões do Kickster)
 
