@@ -720,7 +720,8 @@ Firestore é público para leitura de apps autenticados → não pode conter PII
 - [ADR-001](ADR-001-nova-filosofia-arquitetura.md) – Filosofia de arquitetura
 - [ADR-002](ADR-002-postgres-firestore-cqs.md) – PostgreSQL + Firestore CQS Light
 - [ADR-003](ADR-003-modular-monolith.md) – Modular Monolith
-- [ADR-004](ADR-004-firebase-auth-migration.md) – Migração Firebase Auth
+- [ADR-004](ADR-004-api-first.md) – API First
+- [ADR-010](ADR-010-autenticacao-firebase-custom-claims.md) – Autenticação Firebase-First com Custom Claims
 - [ADR-005](ADR-005-staging-efemero-e2e.md) – Staging efêmero E2E
 - [Cloud Functions Gen 2 docs](https://cloud.google.com/functions/docs/2nd-gen/overview)
 - [Firestore Security Rules](https://firebase.google.com/docs/firestore/security/get-started)

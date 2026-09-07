@@ -37,6 +37,7 @@ layout: home
 | [ADR-004 — API First](adr/ADR-004-api-first.md) | Domínio → Banco → Service → API → Flutter; REST `/api/v1` |
 | [ADR-005 — Staging efêmero E2E](adr/ADR-005-staging-efemero-e2e.md) | Ambientes temporários para testes ponta a ponta |
 | [ADR-006 — Team/Roster/Season](adr/ADR-006-team-roster-season-refactor.md) | Refatoração estrutural: time como entidade, elenco por temporada |
+| [ADR-010 — Autenticação Firebase-First](adr/ADR-010-autenticacao-firebase-custom-claims.md) | Firebase IdP, Custom Claims stateless e ADR-001 em todos os clientes |
 
 ## Design
 
