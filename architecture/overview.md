@@ -57,6 +57,7 @@ flowchart TB
 | **Monorepo** | ADR-002 | Backend, frontend, infra e docs no mesmo repositório |
 | **Modular Monolith** | ADR-003 | Spring Boot com módulos isolados por domínio (`@ApplicationModule`); sem microsserviços/K8s/event broker |
 | **API First** | ADR-004 | Ordem Domínio → Banco (Flyway) → Service → API → Flutter; REST `/api/v1`, JSON, Bearer JWT, Swagger em `/swagger-ui.html` |
+| **Autenticação Firebase-First** | ADR-010 | Firebase Auth como IdP, Custom Claims stateless no backend e ADR-001 em todos os clientes |
 | **Isolamento de módulos** | código | Cada módulo expõe interfaces `{Lookup}`; `ArchitectureTest` valida o isolamento e gera PlantUML |
 | **ID único** | código | Todos os módulos de domínio usam UUID como PK |
 

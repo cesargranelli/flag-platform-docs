@@ -1,49 +1,44 @@
-# Plano de Migração: JWT Custom → Firebase Auth + Custom Claims
+# Plano de Migração: Autenticação Firebase Auth + Custom Claims (ADR-010)
 
 ## Visão Geral
 
-Migrar o sistema de autenticação da Flag Platform do JWT custom (HS256) para Firebase Auth com Custom Claims, mantendo o PostgreSQL como source of truth para dados de usuário e roles.
+Migrar e padronizar o sistema de autenticação de todo o ecossistema da **Flag Platform** para o modelo **Firebase-First com Custom Claims e Validação Stateless**, em total conformidade com a [ADR-010 — Autenticação Firebase-First com Custom Claims e Validação Stateless](ADR-010-autenticacao-firebase-custom-claims.md) e a arquitetura oficial Flutter [ADR-001](ADR-001-nova-filosofia-arquitetura.md).
 
-## Arquitetura Atual vs Nova
+O PostgreSQL (`flag_backend`) permanece como a **fonte única da verdade** (*source of truth*) para usuários, papéis e afiliações de entidades.
 
-### Atual (JWT Custom)
-```
-┌──────────┐     ┌─────────────┐     ┌─────────────────┐
-│  Client  │────►│  Backend    │────►│  PostgreSQL    │
-│          │◄────│  (Spring)   │◄────│  (users table) │
-└──────────┘     │  JWT HS256   │     └─────────────────┘
-                 └─────────────┘
-```
+---
 
-### Nova (Firebase Auth + JWT custom como fallback)
+## Arquitetura Consolidada
+
 ```
 ┌──────────┐     ┌─────────────┐     ┌──────────────┐     ┌─────────────────┐
-│  Client  │────►│  Firebase  │────►│  Backend     │────►│  PostgreSQL      │
-│          │     │  Auth       │     │  (verify ID  │     │  (users table,  │
-│          │◄────│  (ID Token) │     │   token)      │     │   roles)        │
-└──────────┘     └─────────────┘     └──────────────┘     └─────────────────┘
+│  Client  │────►│  Firebase   │────►│ flag_backend │────►│   PostgreSQL    │
+│  (Apps)  │◄────│    Auth     │     │(Stateless JWT│◄────│  (users table,  │
+└──────────┘     │  (ID Token) │     │  validation) │     │     roles)      │
+                 └─────────────┘     └──────────────┘     └─────────────────┘
 ```
+
+---
 
 ## Estrutura de Custom Claims
 
-### Hierarquia de Roles (Custom Claims)
 ```json
 {
   "sub": "firebase-uid-xxx",
-  "role": "ORG_ADMIN",        // SUPER_ADMIN | ORG_ADMIN | MANAGER | USER
-  "organization_id": "uuid",  // ID da organização vinculada (null para SUPER_ADMIN)
-  "club_id": "uuid",         // ID do clube vinculado (null para não-Managers)
-  "skills": ["athlete"],      // athlete | coach | referee | manager
+  "role": "ADMIN_LIGA",        // ADMIN | ADMIN_LIGA | ORGANIZER | REFEREE | COACH | ATHLETE
+  "organization_id": "uuid",   // ID da organização vinculada (null para ADMIN)
+  "club_id": "uuid",          // ID da agremiação/clube (null se não aplicável)
   "email": "user@email.com",
   "email_verified": true
 }
 ```
 
 ### Regras de Precedência
-1. `SUPER_ADMIN` tem acesso total (ignore other claims)
-2. `ORG_ADMIN` tem acesso à organização especificada
-3. `MANAGER` tem acesso ao clube especificado
-4. `USER` acesso básico (pode ter skills)
+1. `ADMIN` / `ADMIN_LIGA`: Acesso total de administração global ou de liga.
+2. `ORGANIZER`: Acesso irrestrito aos dados da organização especificada (`organization_id`).
+3. `REFEREE`: Acesso exclusivo à súmula e partidas designadas no `flag_referee_app`.
+4. `COACH` / `MANAGER`: Acesso à gestão de times e elencos de sua agremiação (`club_id`).
+5. `ATHLETE`: Acesso pessoal ao perfil esportivo no `flag_public_app`.
 
 ## Fases de Migração
 
